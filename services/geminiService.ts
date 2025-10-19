@@ -14,10 +14,10 @@ const recommendationItemSchema = {
     properties: {
         name: { type: Type.STRING, description: "The name of the recommended item." },
         averagePrice: { type: Type.STRING, description: "The estimated average price range of the recommended item in USD, for example '$120 - $150'." },
-        imageUrl: { type: Type.STRING, description: "A direct, publicly accessible URL to an image of the recommended item." },
+        imageUrl: { type: Type.STRING, description: "Leave this empty - we'll generate images separately." },
         category: { type: Type.STRING, description: "A category for the item. Must be one of: 'clothing', 'shoes', 'electronics', 'book', 'food', 'drinkware', 'furniture', 'tool', 'toy', or 'generic'." }
     },
-    required: ['name', 'category', 'averagePrice', 'imageUrl'],
+    required: ['name', 'category', 'averagePrice'],
 };
 
 const responseSchema = {
@@ -59,7 +59,7 @@ export const analyzeImage = async (base64Image: string): Promise<AnalysisResult>
     };
 
     const textPart = {
-      text: "You are a shopping assistant. First, analyze the main object in the image and provide its common name and estimated average price in USD. Then, for each of the following sellers, find 2 or 3 similar items: amazon, ebay, walmart, target, bestbuy, etsy, aliexpress, alibaba. For each recommended item, provide: 1) A product name, 2) Its price range in USD, 3) Leave imageUrl empty (we'll handle images separately), and 4) A category from: 'clothing', 'shoes', 'electronics', 'book', 'food', 'drinkware', 'furniture', 'tool', 'toy', 'generic'. Focus on finding realistic products with accurate names and prices. Your response must be ONLY the JSON object matching the schema.",
+      text: "You are a shopping assistant. First, analyze the main object in the image and provide its common name and estimated average price in USD. Then, for each of the following sellers, find 2 or 3 similar items that actually exist: amazon, ebay, walmart, target, bestbuy, etsy, aliexpress, alibaba. IMPORTANT: You MUST find at least 6-8 total recommendations across all sellers. For each recommended item, provide: 1) A realistic product name, 2) Its price range in USD, 3) Leave imageUrl empty, and 4) A category from: 'clothing', 'shoes', 'electronics', 'book', 'food', 'drinkware', 'furniture', 'tool', 'toy', 'generic'. If you can't find items for a seller, provide fewer items for other sellers to ensure we have enough recommendations. Your response must be ONLY the JSON object matching the schema.",
     };
 
     const response = await ai.models.generateContent({
@@ -88,11 +88,12 @@ export const analyzeImage = async (base64Image: string): Promise<AnalysisResult>
         const items = result.recommendationsBySeller[seller];
         if (Array.isArray(items)) {
             items.forEach((item: any) => {
-                if (item.name && item.category && item.averagePrice && item.imageUrl) {
-                    console.log(`Item: ${item.name}, Image URL: ${item.imageUrl}`); // Debug logging
+                if (item.name && item.category && item.averagePrice) {
+                    console.log(`Item: ${item.name}, Category: ${item.category}, Price: ${item.averagePrice}`); // Debug logging
                     flattenedRecommendations.push({
                         ...item,
                         seller: seller,
+                        imageUrl: item.imageUrl || '', // Handle empty imageUrl
                     });
                 }
             });
