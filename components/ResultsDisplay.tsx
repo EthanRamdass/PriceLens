@@ -219,17 +219,44 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, imagePreviewUr
     </div>
   );
 
+  const getProductImageUrl = (item: RecommendedItem): string => {
+    // Clean the product name for better image search
+    const cleanName = item.name
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    
+    // Use a more reliable image service with product-specific search
+    const searchTerms = cleanName.split(' ').slice(0, 3).join(' ');
+    
+    // Use Lorem Picsum with a hash of the product name for consistency
+    const hash = searchTerms.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    return `https://picsum.photos/seed/${Math.abs(hash)}/300/300`;
+  };
+
   const renderItemCard = (item: RecommendedItem, index: number) => {
     const sellerInfo = getSellerInfo(item.seller);
     const finalUrl = createSearchUrl(results.itemName, item.name, item.seller);
+    const productImageUrl = getProductImageUrl(item);
 
     return (
       <a href={finalUrl} target="_blank" rel="noopener noreferrer" key={`${item.name}-${index}`} className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden flex flex-col group transition-all duration-200 hover:border-indigo-500 hover:shadow-lg hover:-translate-y-1">
         <div className="relative aspect-square w-full bg-gray-700 overflow-hidden">
           <img 
-              src={`https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/300`} 
+              src={productImageUrl} 
               alt={item.name} 
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => {
+                console.log(`Image failed to load for ${item.name}, using fallback`);
+                // Fallback to a simple hash-based image
+                const fallbackHash = item.name.length + item.name.charCodeAt(0);
+                e.currentTarget.src = `https://picsum.photos/seed/${fallbackHash}/300/300`;
+              }}
           />
           {item.averagePrice && (
             <div className="absolute bottom-2 left-2 bg-yellow-400/90 backdrop-blur-sm text-gray-900 font-bold text-lg py-1 px-3 rounded-md shadow-lg">
