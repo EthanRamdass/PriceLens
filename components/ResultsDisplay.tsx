@@ -227,9 +227,16 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, imagePreviewUr
       .trim()
       .toLowerCase();
     
-    // Use Unsplash with specific product search terms
+    // Use a more reliable image service with product-specific search
     const searchTerms = cleanName.split(' ').slice(0, 3).join(' ');
-    return `https://source.unsplash.com/300x300/?${encodeURIComponent(searchTerms)}`;
+    
+    // Use Lorem Picsum with a hash of the product name for consistency
+    const hash = searchTerms.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    return `https://picsum.photos/seed/${Math.abs(hash)}/300/300`;
   };
 
   const renderItemCard = (item: RecommendedItem, index: number) => {
@@ -245,10 +252,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, imagePreviewUr
               alt={item.name} 
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
-                console.log(`Image failed to load for ${item.name}, trying fallback`);
-                // Fallback to a more generic search
-                const fallbackTerms = item.name.split(' ').slice(0, 2).join(' ');
-                e.currentTarget.src = `https://source.unsplash.com/300x300/?${encodeURIComponent(fallbackTerms)}`;
+                console.log(`Image failed to load for ${item.name}, using fallback`);
+                // Fallback to a simple hash-based image
+                const fallbackHash = item.name.length + item.name.charCodeAt(0);
+                e.currentTarget.src = `https://picsum.photos/seed/${fallbackHash}/300/300`;
               }}
           />
           {item.averagePrice && (
