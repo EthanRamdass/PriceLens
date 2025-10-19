@@ -227,10 +227,17 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, imagePreviewUr
       <a href={finalUrl} target="_blank" rel="noopener noreferrer" key={`${item.name}-${index}`} className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden flex flex-col group transition-all duration-200 hover:border-indigo-500 hover:shadow-lg hover:-translate-y-1">
         <div className="relative aspect-square w-full bg-gray-700 overflow-hidden">
           <img 
-              src={item.imageUrl && !item.imageUrl.includes('placeholder') && !item.imageUrl.includes('not-available') ? item.imageUrl : `https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/300`} 
+              src={item.imageUrl && 
+                   !item.imageUrl.includes('placeholder') && 
+                   !item.imageUrl.includes('not-available') &&
+                   !item.imageUrl.includes('picsum') &&
+                   item.imageUrl.startsWith('http') ? 
+                   item.imageUrl : 
+                   `https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/300`} 
               alt={item.name} 
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
+                console.log(`Image failed to load for ${item.name}: ${item.imageUrl}`);
                 e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/300`;
               }}
           />

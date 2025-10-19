@@ -89,6 +89,7 @@ export const analyzeImage = async (base64Image: string): Promise<AnalysisResult>
         if (Array.isArray(items)) {
             items.forEach((item: any) => {
                 if (item.name && item.category && item.averagePrice && item.imageUrl) {
+                    console.log(`Item: ${item.name}, Image URL: ${item.imageUrl}`); // Debug logging
                     flattenedRecommendations.push({
                         ...item,
                         seller: seller,
