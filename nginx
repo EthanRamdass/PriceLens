@@ -1,0 +1,19 @@
+server {
+    listen       8080;
+    server_name  localhost;
+
+    # This is the important part!
+    # We are adding a new header for the Content Security Policy.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://picsum.photos; connect-src 'self' https://generativelanguage.googleapis.com;";
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
