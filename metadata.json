@@ -1,0 +1,7 @@
+{
+  "name": "Price Scanner AI",
+  "description": "An application that uses your device's camera to identify an object, estimate its average price, and recommend similar items using the power of AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
