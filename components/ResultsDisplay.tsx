@@ -219,20 +219,36 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, imagePreviewUr
     </div>
   );
 
+  const getProductImageUrl = (item: RecommendedItem): string => {
+    // Clean the product name for better image search
+    const cleanName = item.name
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    
+    // Use Unsplash with specific product search terms
+    const searchTerms = cleanName.split(' ').slice(0, 3).join(' ');
+    return `https://source.unsplash.com/300x300/?${encodeURIComponent(searchTerms)}`;
+  };
+
   const renderItemCard = (item: RecommendedItem, index: number) => {
     const sellerInfo = getSellerInfo(item.seller);
     const finalUrl = createSearchUrl(results.itemName, item.name, item.seller);
+    const productImageUrl = getProductImageUrl(item);
 
     return (
       <a href={finalUrl} target="_blank" rel="noopener noreferrer" key={`${item.name}-${index}`} className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden flex flex-col group transition-all duration-200 hover:border-indigo-500 hover:shadow-lg hover:-translate-y-1">
         <div className="relative aspect-square w-full bg-gray-700 overflow-hidden">
           <img 
-              src={`https://picsum.photos/seed/${encodeURIComponent(item.name)}/300/300`} 
+              src={productImageUrl} 
               alt={item.name} 
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
-                console.log(`Image failed to load for ${item.name}`);
-                e.currentTarget.src = `https://via.placeholder.com/300x300/6366f1/ffffff?text=${encodeURIComponent(item.name.substring(0, 20))}`;
+                console.log(`Image failed to load for ${item.name}, trying fallback`);
+                // Fallback to a more generic search
+                const fallbackTerms = item.name.split(' ').slice(0, 2).join(' ');
+                e.currentTarget.src = `https://source.unsplash.com/300x300/?${encodeURIComponent(fallbackTerms)}`;
               }}
           />
           {item.averagePrice && (
